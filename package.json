@@ -1,0 +1,22 @@
+{
+  "name": "genlayer-ai-debate-duel",
+  "version": "1.0.0",
+  "description": "Multiplayer AI Debate Duel game with simulated Intelligent Contract and Optimistic Democracy consensus for GenLayer.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "genlayer",
+    "mini-game",
+    "ai",
+    "debate",
+    "consensus",
+    "web3"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}
