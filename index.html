@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Debate Duel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🧠 AI Debate Duel</h1>
+
+<div id="game">
+
+  <h2 id="topic"></h2>
+
+  <div id="arguments"></div>
+
+  <input type="text" id="playerName" placeholder="Your name">
+  <textarea id="argumentInput" placeholder="Enter your argument"></textarea>
+  <button onclick="submitArgument()">Submit Argument</button>
+
+  <div id="voting" style="display:none;">
+    <h3>Vote for the best argument</h3>
+    <div id="voteOptions"></div>
+  </div>
+
+  <h3 id="result"></h3>
+  <h3 id="leaderboard"></h3>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
