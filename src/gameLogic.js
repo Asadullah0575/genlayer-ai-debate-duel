@@ -1,72 +1,51 @@
-const readlineSync = require('readline-sync');
-const { awardXP } = require('./xpSystem');
-const prompts = require('../assets/prompts.json');
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 
-function runDebateGame(roomId, players) {
-    const prompt = prompts[Math.floor(Math.random() * prompts.length)];
-    console.log(`\nDebate Topic: "${prompt}"\n`);
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-    const playerArgs = {};
+let rooms = {};
 
-    // 🧠 Step 1: Players submit arguments
-    players.forEach(player => {
-        const arg = readlineSync.question(`${player}, enter your argument: `);
-        playerArgs[player] = arg;
-    });
+app.use(express.static('.'));
 
-    // 🧾 Show all arguments
-    console.log("\n--- Arguments ---");
-    players.forEach((player, index) => {
-        console.log(`${index + 1}. ${player}: ${playerArgs[player]}`);
-    });
+io.on('connection', (socket) => {
+    console.log('User connected');
 
-    // 🗳️ Step 2: Voting
-    const votes = {};
-    players.forEach(player => votes[player] = 0);
+    socket.on('joinRoom', ({ roomId, name }) => {
+        socket.join(roomId);
 
-    console.log("\n--- Voting Phase ---");
-
-    players.forEach(voter => {
-        console.log(`\n${voter}, vote for the best argument:`);
-
-        players.forEach((player, index) => {
-            if (player !== voter) {
-                console.log(`${index + 1}. ${player}`);
-            }
-        });
-
-        let choice = readlineSync.questionInt("Enter number: ");
-
-        // Adjust for index
-        const selectedPlayer = players[choice - 1];
-
-        if (selectedPlayer && selectedPlayer !== voter) {
-            votes[selectedPlayer]++;
-        } else {
-            console.log("Invalid vote, skipped.");
+        if (!rooms[roomId]) {
+            rooms[roomId] = {
+                players: [],
+                arguments: {},
+                votes: {}
+            };
         }
+
+        rooms[roomId].players.push(name);
+
+        io.to(roomId).emit('updatePlayers', rooms[roomId].players);
     });
 
-    // 📊 Step 3: Determine winner
-    let winner = null;
-    let maxVotes = -1;
+    socket.on('submitArgument', ({ roomId, name, argument }) => {
+        rooms[roomId].arguments[name] = argument;
 
-    for (let player in votes) {
-        if (votes[player] > maxVotes) {
-            maxVotes = votes[player];
-            winner = player;
+        io.to(roomId).emit('updateArguments', rooms[roomId].arguments);
+    });
+
+    socket.on('vote', ({ roomId, player }) => {
+        if (!rooms[roomId].votes[player]) {
+            rooms[roomId].votes[player] = 0;
         }
-    }
 
-    // 🏆 Step 4: Show results
-    console.log("\n--- Results ---");
-    console.log("Votes:", votes);
-    console.log(`Winner: ${winner}`);
+        rooms[roomId].votes[player]++;
 
-    // 🎯 Step 5: Award XP
-    if (winner) {
-        awardXP(winner, 10);
-    }
-}
+        io.to(roomId).emit('updateVotes', rooms[roomId].votes);
+    });
+});
 
-module.exports = { runDebateGame };
+server.listen(3000, () => {
+    console.log('Server running on http://localhost:3000');
+});
